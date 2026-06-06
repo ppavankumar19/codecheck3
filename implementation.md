@@ -107,19 +107,33 @@ The `StorageConnector` supports three backends, configured in `application.prope
 
 ---
 
-## What We Did in This Session
+## Implementation Approach
 
-### 1. Project Analysis
+### Step 1 — Project Analysis
 
-Performed a full analysis of the codecheck3 repository:
-- Mapped all controllers, services, and core checker classes
-- Identified all existing frontend static assets
+Explored the full repository structure using file-tree traversal and targeted searches:
+- Mapped all controllers, services, and core checker classes in `src/main/java/`
+- Identified all frontend static assets in `src/main/resources/META-INF/resources/`
+- Read key source files: `AssignmentController.java`, `Assignment.java`, `CheckController.java`, `uploadProblem.html`
 - Understood the assignment workflow for both students and instructors
-- Documented all API routes and their purposes
+- Read `build-instructions.md` to understand the comrun setup and Maven build process
 
-### 2. Created Exercise Listing Pages
+### Step 2 — Scraping the Reference Site
 
-Modelled after the live pages on `https://horstmann.com/codecheck/`, we created four static HTML exercise listing pages. All pages are served by the Quarkus server at the root path.
+The reference site at `https://horstmann.com/codecheck/` already had a Python page. We used it as the model:
+
+1. Fetched `https://horstmann.com/codecheck/python-questions.html` with a web fetch tool to extract all problem/assignment URLs, category structure, and subcategory names
+2. Repeated the same fetch process for Java (objects-early), Java (objects-late), and C++ pages from the same domain
+3. Extracted all `https://codecheck.io/files/wiley/codecheck-*` problem links and `https://codecheck.io/viewAssignment/...` assignment links
+4. Noted URL patterns per language:
+   - Python: `codecheck-python-[Category]-[N]`
+   - Java Early: `codecheck-bj-4-[category]-[N]`
+   - Java Late: `codecheck-bjlo-1-*` and `codecheck-bj-4-*` combined
+   - C++: `codecheck-cpp-[Category]-[N]` (note: `LoopsAlongaRoworCcolumn` with double `c` in 2D array sections)
+
+### Step 3 — Created Exercise Listing Pages
+
+Built four static HTML pages placed at `src/main/resources/META-INF/resources/` so Quarkus serves them at the root path.
 
 | File | URL | Content |
 |---|---|---|
@@ -130,20 +144,21 @@ Modelled after the live pages on `https://horstmann.com/codecheck/`, we created 
 
 All problem links point to `https://codecheck.io/files/wiley/...` and all assignment links point to `https://codecheck.io/viewAssignment/...` — the live production server.
 
-Each page has:
-- A consistent clean style (blue headings, sans-serif font, 960px max-width)
-- Assignments section (15 weekly links)
-- Programming Problems section organized by category and subcategory with numbered lists
-- A Bug Report form at the bottom
+Each page uses a consistent layout:
+- `font-family: sans-serif; max-width: 960px; margin: 0 auto; padding: 1em 2em`
+- Blue headings (`#0054a8`): `h3` for categories, `h4` for subcategories
+- Numbered `<ol>` lists for problems within each subcategory
+- Assignments section at the top (15 weekly links)
+- Bug Report form at the bottom
 
-### 3. Set Up and Ran the Server
+### Step 4 — Set Up and Ran the Server
 
 Installed prerequisites:
 ```
 openjdk-21-jdk, maven, git, curl, zip, unzip
 ```
 
-Set up the `comrun` code runner:
+Set up the `comrun` code runner (must be run from the project root):
 ```bash
 cd /home/pavankumar19/codecheck3
 mkdir -p comrun/bin/lib && cd comrun/bin/lib
@@ -163,6 +178,25 @@ COMRUN_USER=$(whoami) mvn quarkus:dev
 ```
 
 Server runs at **http://localhost:8080**
+
+### Step 5 — GitHub Repository
+
+Created a public GitHub repository and pushed each new file as an individual commit:
+
+```bash
+gh repo create ppavankumar19/codecheck3 --public
+git remote add myfork https://github.com/ppavankumar19/codecheck3.git
+git push myfork main   # push existing upstream history first
+```
+
+Individual commits pushed:
+1. `python-questions.html` — "Add Python exercises listing page"
+2. `java-objects-early.html` — "Add Java (Objects Early) exercises listing page"
+3. `java-objects-late.html` — "Add Java (Objects Late) exercises listing page"
+4. `cpp-questions.html` — "Add C++ exercises listing page"
+5. `implementation.md` — "Add implementation notes documenting project architecture and session work"
+
+**Repo:** `https://github.com/ppavankumar19/codecheck3`
 
 ---
 
