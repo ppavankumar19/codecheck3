@@ -264,12 +264,26 @@ window.addEventListener('DOMContentLoaded', () => {
       const returnToWorkURLSpan = document.getElementById('returnToWorkURL') 
       returnToWorkURLSpan.textContent = assignment.returnToWorkURL
     
-      document.getElementById('returnToWork').appendChild(createButton('hc-command', 'Copy', () => { 
-        window.getSelection().selectAllChildren(returnToWorkURLSpan) 
+      document.getElementById('returnToWork').appendChild(createButton('hc-command', 'Copy', () => {
+        window.getSelection().selectAllChildren(returnToWorkURLSpan)
         document.execCommand('copy')
-        window.getSelection().removeAllRanges() 
+        window.getSelection().removeAllRanges()
       }))
-      
+
+      const submitBtn = createButton('hc-command', 'Submit Assignment', async () => {
+        try {
+          responseDiv.textContent = ''
+          work.submittedAt = new Date(Date.now() - assignment.receivedAt + Date.parse(assignment.sentAt)).toISOString()
+          await postData("/saveWork", work)
+          submitBtn.textContent = 'Submitted'
+          submitBtn.disabled = true
+          responseDiv.textContent = 'Assignment submitted at ' + new Date(work.submittedAt).toLocaleString()
+        } catch (e) {
+          responseDiv.textContent = e.message
+        }
+      })
+      document.getElementById('submitDiv').appendChild(submitBtn)
+
       if (assignment.editKeySaved) {
         activateProblemSelection()
         document.getElementById('savedcopy').style.display = 'none'

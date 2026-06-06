@@ -172,13 +172,15 @@ public class AssignmentController {
     }
 
     @POST
-    @jakarta.ws.rs.Path("/saveComment")
+    @jakarta.ws.rs.Path("/private/saveComment/{assignmentID}/{editKey}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response instructorSavesComment(JsonNode params) throws IOException {
+    public Response instructorSavesComment(
+            @PathParam("assignmentID") String assignmentID,
+            @PathParam("editKey") String editKey,
+            JsonNode params) throws IOException {
         try {
-            // TODO: need edit key to authenticate instructor, add /private to URL
-            ObjectNode result = assignmentService.saveComment(params);
+            ObjectNode result = assignmentService.saveComment(params, assignmentID, editKey);
             return Response.ok(result).build();
         } catch (ServiceException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();
@@ -191,8 +193,7 @@ public class AssignmentController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response studentSavesWork(JsonNode params) throws IOException, NoSuchAlgorithmException {
         try {
-            // TODO: auth
-            ObjectNode result = assignmentService.saveWork(params);
+            ObjectNode result = assignmentService.saveWork(params, ccid, editKey);
             return Response.ok(result).build();
         } catch (ServiceException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build();

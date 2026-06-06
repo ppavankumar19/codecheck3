@@ -131,7 +131,7 @@ public class Assignment {
             if (ccid == null && editKey != null && !editKeyValid(editKey, assignmentNode))
                 throw new ServiceException("Edit key does not match");
             if (ccid != null && editKey != null) {  // Instructor viewing student submission
-                assignmentNode.put("saveCommentURL", "/saveComment"); 
+                assignmentNode.put("saveCommentURL", "/private/saveComment/" + assignmentID + "/" + editKey);
                 workID = ccid + "/" + editKey;
                 // Only put workID into assignmentNode when viewing submission as Instructor, for security reason
                 assignmentNode.put("workID", workID);
@@ -226,6 +226,7 @@ public class Assignment {
      <p id="deadlineLocal" style="font-weight: bold;"></p>
      <p id="deadlineUTC" style="font-weight: bold;"></p>
 	   <p id="savedcopy"><input type="checkbox"/>  I saved a copy of the private URL</p>
+	   <div id="submitDiv"></div>
    </div>
    <div id="studentLTIInstructions">
      <p>You are viewing this assignment from a Learning Management System (LMS)</p>
@@ -443,49 +444,61 @@ public class Assignment {
           // Otherwise it's an LTI edit key (tool consumer ID + user ID)
     }
     
-    public ObjectNode saveWork(JsonNode requestNode) throws IOException, NoSuchAlgorithmException {
+    public ObjectNode saveWork(JsonNode requestNode, String cookieCcid, String cookieEditKey) throws IOException, NoSuchAlgorithmException {
         ObjectNode result = JsonNodeFactory.instance.objectNode();
-        
+
         Instant now = Instant.now();
         String assignmentID = requestNode.get("assignmentID").asText();
         ObjectNode assignmentNode = storageConn.readAssignment(assignmentID);
         if (assignmentNode == null) throw new ServiceException("Assignment not found");
         String workID = requestNode.get("workID").asText();
-        String problemID = requestNode.get("tab").asText();
-        ObjectNode problemNode = (ObjectNode) requestNode.get("problems").get(problemID);
 
-        String submissionID = assignmentID + " " + workID + " " + problemID; 
-        ObjectNode submissionNode = JsonNodeFactory.instance.objectNode();
-        submissionNode.put("submissionID", submissionID);
-        submissionNode.put("submittedAt", now.toString());
-        submissionNode.put("state", problemNode.has("state") ? problemNode.get("state").toString() : null);
-        submissionNode.put("score", problemNode.has("score") ? problemNode.get("score").asDouble() : 0.0);
-        storageConn.writeSubmission(submissionNode);
-        
+        if (cookieCcid == null || cookieEditKey == null || !workID.equals(cookieCcid + "/" + cookieEditKey))
+            throw new ServiceException("Unauthorized");
+
+        JsonNode tabNode = requestNode.get("tab");
+        if (tabNode != null && !tabNode.isNull()) {
+            String problemID = tabNode.asText();
+            JsonNode problemJson = requestNode.get("problems").get(problemID);
+            if (problemJson != null) {
+                ObjectNode problemNode = (ObjectNode) problemJson;
+                String submissionID = assignmentID + " " + workID + " " + problemID;
+                ObjectNode submissionNode = JsonNodeFactory.instance.objectNode();
+                submissionNode.put("submissionID", submissionID);
+                submissionNode.put("submittedAt", now.toString());
+                submissionNode.put("state", problemNode.has("state") ? problemNode.get("state").toString() : null);
+                submissionNode.put("score", problemNode.has("score") ? problemNode.get("score").asDouble() : 0.0);
+                storageConn.writeSubmission(submissionNode);
+            }
+        }
+
         if (assignmentNode.has("deadline")) {
             Instant deadline = Instant.parse(assignmentNode.get("deadline").asText());
-            if (now.isAfter(deadline)) 
+            if (now.isAfter(deadline))
                 throw new ServiceException("After deadline of " + deadline);
         }
-        result.put("submittedAt", now.toString());      
+        result.put("submittedAt", now.toString());
 
-        storageConn.writeWork(requestNode);        
+        storageConn.writeWork(requestNode);
         return result;
     }
     
-    public ObjectNode saveComment(JsonNode requestNode) throws IOException {
+    public ObjectNode saveComment(JsonNode requestNode, String assignmentID, String editKey) throws IOException {
+        ObjectNode assignmentNode = storageConn.readAssignment(assignmentID);
+        if (assignmentNode == null) throw new ServiceException("Assignment not found");
+        if (!editKeyValid(editKey, assignmentNode))
+            throw new ServiceException("Edit key does not match");
+
         ObjectNode result = JsonNodeFactory.instance.objectNode();
-        String assignmentID = requestNode.get("assignmentID").asText();
         String workID = requestNode.get("workID").asText();
         String comment = requestNode.get("comment").asText();
-        
+
         ObjectNode commentNode = JsonNodeFactory.instance.objectNode();
         commentNode.put("assignmentID", assignmentID);
         commentNode.put("workID", workID);
         commentNode.put("comment", comment);
         storageConn.writeComment(commentNode);
         result.put("comment", comment);
-        //result.put("refreshURL", "/private/submission/" + assignmentID + "/" + workID);
         return result;
-    } 
+    }
 }
