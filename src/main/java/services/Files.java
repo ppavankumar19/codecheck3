@@ -84,7 +84,7 @@ public class Files {
 <html>
 <head>
   <meta charset="utf-8">
-  <link href='https://horstmann.com/codecheck/css/codecheck_tracer.css' rel='stylesheet' type='text/css'/>  \
+  <link href='/assets/codecheck_tracer.css' rel='stylesheet' type='text/css'/>  \
   <title>CodeCheck Tracer</title>
   <script src='/assets/util.js'></script>
   <script src='/assets/codecheck2.js'></script>

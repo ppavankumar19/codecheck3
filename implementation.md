@@ -216,6 +216,50 @@ Then open:
 
 ---
 
+## Offline Operation
+
+### What was blocking offline use (and the fixes applied)
+
+| # | File | Problem | Fix |
+|---|---|---|---|
+| 1 | `application.properties` | Quarkus DevServices tried to start Docker/PostgreSQL on every boot | Added `quarkus.datasource.devservices.enabled=false` |
+| 2 | All 4 exercise listing pages | ~600 problem/assignment links pointed to `https://codecheck.io/...` | Changed to relative URLs (`/files/wiley/...`, `/viewAssignment/...`) |
+| 3 | `Files.java`, `LTIProblem.java` | Tracer CSS hard-coded to `https://horstmann.com/codecheck/css/codecheck_tracer.css` | Created local copy at `/assets/codecheck_tracer.css`, updated both Java files |
+| 4 | `horstmann_codecheck.js` | Uses `window.location.origin` for all API calls | Already relative — no change needed |
+| 5 | `Main.java` | `comrun.remote` vs `comrun.local` resolution | Already falls back to local; no change needed |
+
+### What still requires offline setup (not automatically solvable)
+
+The problem ZIP files must be present locally at:
+```
+/opt/codecheck/repo/Problems/wiley/<problem-name>.zip
+```
+
+**Option A — Download visible content only (partial, display works, checking limited):**
+```bash
+pip install requests
+python3 download-wiley-problems.py --repo-root .
+```
+This downloads the visible file structure from `https://codecheck.io/fileData/wiley/...` for each problem and reconstructs ZIPs. Students can see and edit problems. Full pass/fail scoring requires Option B.
+
+**Option B — Full ZIPs (complete offline checking):**
+Obtain the complete problem ZIPs from the textbook author/publisher and place them at:
+```
+/opt/codecheck/repo/Problems/wiley/
+```
+
+### Offline architecture (after fixes)
+
+```
+Student browser ──► localhost:8080 ──► LocalStorageConnection (/opt/codecheck/repo/)
+                                   ──► comrun (/opt/codecheck/comrun)  [code execution]
+                                   ──► Static assets served locally
+                                   ──► Problem ZIPs served locally
+```
+No external network calls are made once the server is running.
+
+---
+
 ## Known Limitations (Local Dev)
 
 | Issue | Cause | Impact |

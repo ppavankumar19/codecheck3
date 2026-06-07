@@ -169,7 +169,7 @@ public class LTIProblem {
             + "<html>\n"
             + "<head>\n"
             + "  <meta charset=\"utf-8\">\n"
-            + "  <link href='https://horstmann.com/codecheck/css/codecheck_tracer.css' rel='stylesheet' type='text/css'/>  "
+            + "  <link href='/assets/codecheck_tracer.css' rel='stylesheet' type='text/css'/>  "
             + "  <title>CodeCheck Tracer</title>\n"
             + "  <script src='/assets/util.js'></script>\n"
             + "  <script src='/assets/codecheck2.js'></script>\n"
