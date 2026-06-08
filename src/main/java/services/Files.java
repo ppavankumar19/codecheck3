@@ -62,7 +62,7 @@ public class Files {
         wakeupChecker();
         Problem problem = new Problem(problemFiles);
         ObjectNode data = Util.toJson(problem.getProblemData());
-        data.put("url",  url + "/checkNJS");
+        data.put("url", "/checkNJS"); // relative — works on any host/port
         data.put("repo", repo);
         data.put("problem", problemName);
         String description = "";

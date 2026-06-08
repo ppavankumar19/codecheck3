@@ -91,16 +91,24 @@ def build_zip(problem_id, data):
         required = data.get("requiredFiles") or {}
         for fname, editor_state in required.items():
             editors = (editor_state or {}).get("editors") or []
-            # editors is a list of string sections; None means a "show" boundary
-            parts = []
-            for i, section in enumerate(editors):
-                if section is None:
-                    parts.append("##SHOW\n")
-                elif i == 0:
-                    parts.append(section if section else "")
-                else:
-                    parts.append("\n##EDIT\n" + (section if section else ""))
-            content = "".join(parts)
+            # editors is a list of string sections; None means a "show" boundary.
+            # We MUST include ##EDIT so Problem.java treats this as a solution file.
+            # Without ##EDIT the file stays in useFiles and solutionFiles is empty,
+            # causing CodeCheckException: No solution files found.
+            if not editors or len(editors) == 1:
+                # Entire file is the editable region
+                body = editors[0] if editors else ""
+                content = "##EDIT\n" + (body or "")
+            else:
+                parts = []
+                for i, section in enumerate(editors):
+                    if section is None:
+                        parts.append("##SHOW\n")
+                    elif i == 0:
+                        parts.append(section if section else "")
+                    else:
+                        parts.append("\n##EDIT\n" + (section if section else ""))
+                content = "".join(parts)
             zf.writestr(fname, content)
 
         # Use (read-only) files

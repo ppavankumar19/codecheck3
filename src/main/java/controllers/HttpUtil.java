@@ -39,7 +39,9 @@ public class HttpUtil {
             }
             prefix = prefix.substring(0, prefix.length() - 1);
         } else {
-            prefix = (secure ? "https://" : "http://") + host;
+            int port = uri.getPort();
+            boolean nonStandardPort = port > 0 && ((secure && port != 443) || (!secure && port != 80));
+            prefix = (secure ? "https://" : "http://") + host + (nonStandardPort ? ":" + port : "");
         }
         return prefix;
     }
