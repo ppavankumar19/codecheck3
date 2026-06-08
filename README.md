@@ -41,7 +41,8 @@ Four static exercise listing pages are included, served at the root path by the 
 | `java-objects-late.html` | `/java-objects-late.html` | ~240 Java problems (objects-late curriculum) |
 | `cpp-questions.html` | `/cpp-questions.html` | ~130 C++ problems across Branches, Strings, Arrays, 2D Arrays |
 
-All problem links point to `https://codecheck.io/files/wiley/...` on the live production server.
+All problem links point to `/files/wiley/...` on the local server — fully offline, no internet required.
+604 problem ZIPs are pre-downloaded to `/opt/codecheck/repo/Problems/wiley/`.
 
 ---
 
