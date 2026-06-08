@@ -91,23 +91,27 @@ def build_zip(problem_id, data):
         required = data.get("requiredFiles") or {}
         for fname, editor_state in required.items():
             editors = (editor_state or {}).get("editors") or []
-            # editors is a list of string sections; None means a "show" boundary.
-            # We MUST include ##EDIT so Problem.java treats this as a solution file.
-            # Without ##EDIT the file stays in useFiles and solutionFiles is empty,
-            # causing CodeCheckException: No solution files found.
+            # Determine the annotation delimiter from the file extension.
+            # Python uses ##, Java/C++/others use //  (matches pseudoCommentDelimiters())
+            ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
+            delim = "##" if ext == "py" else "//"
+            edit_marker = delim + "EDIT"
+            show_marker = delim + "SHOW"
+
+            # We MUST include the EDIT marker so Problem.java recognises this as
+            # a solution file; without it solutionFiles stays empty → CodeCheckException.
             if not editors or len(editors) == 1:
-                # Entire file is the editable region
                 body = editors[0] if editors else ""
-                content = "##EDIT\n" + (body or "")
+                content = edit_marker + "\n" + (body or "")
             else:
                 parts = []
                 for i, section in enumerate(editors):
                     if section is None:
-                        parts.append("##SHOW\n")
+                        parts.append(show_marker + "\n")
                     elif i == 0:
                         parts.append(section if section else "")
                     else:
-                        parts.append("\n##EDIT\n" + (section if section else ""))
+                        parts.append("\n" + edit_marker + "\n" + (section if section else ""))
                 content = "".join(parts)
             zf.writestr(fname, content)
 
