@@ -95,7 +95,7 @@ public class UploadController {
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> entry = fields.next();
                 String key = entry.getKey();
-                if (key.trim().length() > 0 && key != "problemID" && key != "editKey") {
+                if (key.trim().length() > 0 && !key.equals("problemID") && !key.equals("editKey")) {
                     String contents = entry.getValue().asText().replaceAll("\r\n", "\n");
                     problemFiles.put(Path.of(key), contents.getBytes(StandardCharsets.UTF_8));
                 }
