@@ -50,16 +50,23 @@ def fetch_assignment(assignment_id):
     return data, None
 
 def rewrite_urls(problems):
-    """Rewrite codecheck.us/files/wiley/... to /files/wiley/... (local-relative)."""
+    """Keep locally cached problems and rewrite their URLs to local-relative."""
+    offline_problems = []
     for p in problems:
         url = p.get("URL", "")
+        qid = p.get("qid", "")
         for prefix in ("https://codecheck.us/files/wiley/",
                         "http://codecheck.us/files/wiley/",
                         "https://codecheck.io/files/wiley/"):
             if url.startswith(prefix):
                 p["URL"] = "/files/wiley/" + url[len(prefix):]
                 break
-    return problems
+        if p["URL"].startswith(("/", "http://localhost", "http://127.0.0.1")):
+            offline_problems.append(p)
+        elif qid and (STORAGE_DIR.parent / "Problems" / "wiley" / f"{qid}.zip").is_file():
+            p["URL"] = f"/files/wiley/{qid}"
+            offline_problems.append(p)
+    return offline_problems
 
 def main():
     os.makedirs(STORAGE_DIR, exist_ok=True)
@@ -77,8 +84,16 @@ def main():
     for assignment_id, label in sorted(ids.items(), key=lambda x: x[1]):
         dest = STORAGE_DIR / assignment_id
         if dest.exists():
-            print(f"  skip  {label}")
-            skip += 1
+            data = json.loads(dest.read_text())
+            problems = rewrite_urls([p for group in data.get("problems", []) for p in group])
+            if problems:
+                data["problems"] = [problems]
+                dest.write_text(json.dumps(data))
+                print(f"  local {label}  ({len(problems)} problems)")
+                skip += 1
+            else:
+                print(f"  WARN  {label}: no problems are available offline")
+                fail += 1
             continue
 
         data, err = fetch_assignment(assignment_id)
@@ -100,6 +115,10 @@ def main():
 
         # Rewrite codecheck.us URLs to local /files/wiley/...
         problems = rewrite_urls(data.get("problems", []))
+        if not problems:
+            print(f"  WARN  {label}: no problems are available offline")
+            fail += 1
+            continue
 
         # The local server's work() expects problems as [[p1,p2,...]] (array of groups).
         # The page embeds one pre-selected flat group — wrap it back.

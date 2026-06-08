@@ -139,6 +139,8 @@ public class Assignment {
         }
         assignmentNode.remove("editKey");
         ArrayNode groups = (ArrayNode) assignmentNode.get("problems");
+        if (groups == null || groups.isEmpty())
+            throw new ServiceException("This assignment contains no lessons that are available offline.");
         assignmentNode.set("problems", groups.get(Math.abs(workID.hashCode()) % groups.size()));
         
         // Start reading work and comments

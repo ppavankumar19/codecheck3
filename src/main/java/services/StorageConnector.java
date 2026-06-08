@@ -69,6 +69,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.horstmann.codecheck.checker.Util;
 
@@ -111,6 +112,9 @@ public class StorageConnector {
 
     public ObjectNode readAssignment(String assignmentID) throws IOException {
         ObjectNode assignmentNode = delegate.readAssignment(assignmentID);
+        if (assignmentNode != null && Boolean.parseBoolean(config.getString("com.horstmann.codecheck.offline"))) {
+            localizeAssignment(assignmentNode);
+        }
         /*
         TODO: Eventually remove
         This only relates to problems with qid which used to be stored at different URLs. These are rewritten
@@ -149,6 +153,37 @@ public class StorageConnector {
             }
         }
         return assignmentNode;
+    }
+
+    private void localizeAssignment(ObjectNode assignmentNode) {
+        ArrayNode groups = (ArrayNode) assignmentNode.get("problems");
+        ArrayNode localizedGroups = JsonNodeFactory.instance.arrayNode();
+        int omittedProblems = 0;
+        String localRoot = config.getString("com.horstmann.codecheck.storage.local");
+
+        for (JsonNode groupNode : groups) {
+            ArrayNode localizedGroup = JsonNodeFactory.instance.arrayNode();
+            for (JsonNode problemNode : groupNode) {
+                ObjectNode problem = (ObjectNode) problemNode;
+                String url = problem.get("URL").asText();
+                if ((!url.startsWith("http://") && !url.startsWith("https://"))
+                        || url.startsWith("http://localhost")
+                        || url.startsWith("http://127.0.0.1")) {
+                    localizedGroup.add(problem);
+                } else if (problem.has("qid") && localRoot != null
+                        && Files.isRegularFile(Path.of(localRoot, "Problems", "wiley",
+                            problem.get("qid").asText() + ".zip"))) {
+                    problem.put("URL", "/files/wiley/" + problem.get("qid").asText());
+                    localizedGroup.add(problem);
+                } else {
+                    omittedProblems++;
+                }
+            }
+            if (!localizedGroup.isEmpty()) localizedGroups.add(localizedGroup);
+        }
+
+        assignmentNode.set("problems", localizedGroups);
+        if (omittedProblems > 0) assignmentNode.put("offlineOmittedProblems", omittedProblems);
     }
 
     public String readLegacyLTIResource(String resourceID) throws IOException {
@@ -1029,4 +1064,3 @@ WHERE CodeCheckWork.submittedAt < EXCLUDED.submittedAt
         }
     }
 }
-

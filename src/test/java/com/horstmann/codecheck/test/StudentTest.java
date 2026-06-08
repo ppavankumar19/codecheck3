@@ -38,6 +38,23 @@ public class StudentTest extends TestUtil {
         Assertions.assertEquals("3/3", response.get("score").asText());
     }
 
+    @Test public void offlineAssignmentOmitsExternalLessons() throws IOException, URISyntaxException {
+        String contents = getHTML("viewAssignment/2012131856g3agnrusxkj3mz6ckiubyga8");
+        Assertions.assertTrue(contents.contains("/files/wiley/ebook-py-3-ch04-sec08-cc-5"));
+        Assertions.assertTrue(contents.contains("offlineOmittedProblems"));
+        Assertions.assertFalse(contents.contains("https://horstmann.com/interactivities/"));
+    }
+
+    @Test public void allExternalAssignmentFailsClearly() throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(baseUrl.toURI().resolve("viewAssignment/20121606051p1popwn8d84crehuhdhzvd9w"))
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertTrue(response.body().contains("no lessons that are available offline"));
+    }
+
     String testUserID = "__test__.user_id.1";
     String testToolConsumerID = "__test__.tool_consumer_id.1";
     String testContextID = "__test__.context_id.1";

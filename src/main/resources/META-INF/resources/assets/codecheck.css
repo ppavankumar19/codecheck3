@@ -4,14 +4,14 @@
   font-family: "DejaVuSansMonoSemiCondensed";
   font-style: normal;
   font-weight: normal;
-  src: url("https://horstmann.com/fonts/DejaVuSansMonoSemiCondensed.woff")
+  src: url("/assets/DejaVuSansMonoSemiCondensed.woff")
 }
 
 @font-face {
   font-family: "MarkingPen";
   font-style: normal;
   font-weight: normal;
-  src: url("https://horstmann.com/fonts/MarkingPen.woff")
+  src: url("/assets/MarkingPen.woff")
 }
 
 .pseudo {

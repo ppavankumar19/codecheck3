@@ -193,6 +193,10 @@ window.addEventListener('DOMContentLoaded', () => {
   // Start of initialization
   
   assignment.receivedAt = Date.now()
+
+  if (assignment.offlineOmittedProblems > 0) {
+    responseDiv.textContent = `${assignment.offlineOmittedProblems} online-only lesson(s) were omitted in offline mode.`
+  }
   
   if (lti !== undefined) 
     window.history.replaceState(null, '', '/')  

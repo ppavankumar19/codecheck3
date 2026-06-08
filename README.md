@@ -118,7 +118,13 @@ Each page has two sections:
 
 713 problem ZIPs are pre-downloaded to `/opt/codecheck/repo/Problems/wiley/`.
 48 weekly assignment JSONs are stored in `/opt/codecheck/repo/CodeCheckAssignments/`.
-No internet required at runtime.
+Offline mode keeps locally cached CodeCheck lessons in those assignments and omits
+third-party interactive lessons whose assets are not available locally. An assignment
+that contains only third-party lessons reports that it is unavailable offline instead
+of loading a broken remote iframe.
+
+No internet is required at runtime for the locally cached lessons, assignment work,
+or code checking.
 
 To re-download (if needed):
 ```bash
@@ -132,4 +138,3 @@ python3 download-assignments.py      # weekly assignment data
 
 See [build-instructions.md](./build-instructions.md) for full setup including `comrun` and prerequisites.
 See [implementation.md](./implementation.md) for a detailed walkthrough of the implementation approach.
-
