@@ -27,7 +27,7 @@ public class FilesController {
         try {
             if (ccid == null) ccid = Util.createPronouncableUID();
             String result = filesService.filesHTML2(HttpUtil.prefix(uriInfo, headers), repo, problemName, ccid);
-            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid)).build();
+            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers))).build();
         } catch (ServiceException | IOException | ScriptException | NoSuchMethodException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -55,7 +55,7 @@ public class FilesController {
         try {
             if (ccid == null) ccid = Util.createPronouncableUID();
             String result = filesService.tracer(repo, problemName, ccid);
-            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid)).build();
+            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers))).build();
         } catch (ServiceException | ScriptException | NoSuchMethodException | IOException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -75,7 +75,7 @@ public class FilesController {
         try {
             if (ccid == null) ccid = Util.createPronouncableUID();
             ObjectNode result = filesService.fileData(repo, problemName, ccid);
-            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid)).build();
+            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers))).build();
         } catch (ServiceException | IOException | ScriptException | NoSuchMethodException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }

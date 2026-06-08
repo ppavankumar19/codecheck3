@@ -22,8 +22,9 @@ import java.util.TreeMap;
 @RequestScoped
 @jakarta.ws.rs.Path("/")
 public class CheckController {
-    @Inject
-    services.Check checkService;
+    @Inject services.Check checkService;
+    @Context UriInfo uriInfo;
+    @Context HttpHeaders headers;
 
     @POST
     @jakarta.ws.rs.Path("/run")
@@ -86,7 +87,7 @@ public class CheckController {
         try {
             if (ccid == null) ccid = Util.createPronouncableUID();
             ObjectNode result = checkService.checkNJS(json, ccid);
-            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid)).build();
+            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers))).build();
         } catch (ServiceException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -100,7 +101,7 @@ public class CheckController {
         try {
             if (ccid == null) ccid = Util.createPronouncableUID();
             String result = checkService.setupReport(repo, problemName, ccid);
-            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid)).build();
+            return Response.ok(result).cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers))).build();
         } catch (ServiceException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }

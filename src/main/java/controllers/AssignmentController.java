@@ -58,8 +58,8 @@ public class AssignmentController {
             editKey = Util.createPrivateUID();
             String result = assignmentService.work(prefix, assignmentID, ccid, editKey, true /* student */, false /* editKeySaved */);
             return Response.ok(result)
-                    .cookie(HttpUtil.buildCookie("ccid", ccid))
-                    .cookie(HttpUtil.buildCookie("cckey", editKey))
+                    .cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers)))
+                    .cookie(HttpUtil.buildCookie("cckey", editKey, HttpUtil.isSecure(uriInfo, headers)))
                     .build();
         }
         catch (ServiceException ex) {
@@ -77,8 +77,8 @@ public class AssignmentController {
             editKey = Util.createPrivateUID();
             String result = assignmentService.work(prefix, assignmentID, ccid, editKey, true /* student */, false /* editKeySaved */);
             return Response.ok(result)
-                    .cookie(HttpUtil.buildCookie("ccid", ccid))
-                    .cookie(HttpUtil.buildCookie("cckey", editKey))
+                    .cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers)))
+                    .cookie(HttpUtil.buildCookie("cckey", editKey, HttpUtil.isSecure(uriInfo, headers)))
                     .build();
         }
         catch (ServiceException ex) {
@@ -94,8 +94,8 @@ public class AssignmentController {
             String prefix = HttpUtil.prefix(uriInfo, headers);
             String result = assignmentService.work(prefix, assignmentID, ccid, editKey, true /* student */, true /* editKeySaved */);
             return Response.ok(result)
-                    .cookie(HttpUtil.buildCookie("ccid", ccid))
-                    .cookie(HttpUtil.buildCookie("cckey", editKey))
+                    .cookie(HttpUtil.buildCookie("ccid", ccid, HttpUtil.isSecure(uriInfo, headers)))
+                    .cookie(HttpUtil.buildCookie("cckey", editKey, HttpUtil.isSecure(uriInfo, headers)))
                     .build();
         }
         catch (ServiceException ex) {

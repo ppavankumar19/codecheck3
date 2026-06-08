@@ -209,7 +209,7 @@ public Response contentSelection(MultivaluedMap<String, String> formParams)
                         Util.getParam(postParams, "user_id");
 
                 String ccauth = jwt.generate(Map.of("resourceID", resourceID, "editKey", editKey));
-                return Response.ok(result).cookie(HttpUtil.buildCookie("ccauth", ccauth)).build();
+                return Response.ok(result).cookie(HttpUtil.buildCookie("ccauth", ccauth, HttpUtil.isSecure(uriInfo, headers))).build();
             } else { // Student
                 return Response.ok(result).build();
             }

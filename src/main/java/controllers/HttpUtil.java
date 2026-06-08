@@ -46,15 +46,24 @@ public class HttpUtil {
         return prefix;
     }
 
-    public static NewCookie buildCookie(String name, String value) {
+    public static boolean isSecure(UriInfo uriInfo, HttpHeaders headers) {
+        return uriInfo.getBaseUri().getScheme().equals("https") ||
+                headers.getRequestHeader("X-Forwarded-Proto").contains("https");
+    }
+
+    public static NewCookie buildCookie(String name, String value, boolean secure) {
         return new NewCookie.Builder(name)
                 .value(value)
                 .path("/")
-                .maxAge(60 * 60 * 24 * 180) // 180 days TODO Even for jwt???
-                .secure(true)
-                .sameSite(NewCookie.SameSite.NONE)
+                .maxAge(60 * 60 * 24 * 180) // 180 days
+                .secure(secure)
+                .sameSite(secure ? NewCookie.SameSite.NONE : NewCookie.SameSite.LAX)
                 .httpOnly(true)
                 .build();
+    }
+
+    public static NewCookie buildCookie(String name, String value) {
+        return buildCookie(name, value, true);
     }
 
     // TODO: Fix so that it works for repeated keys
