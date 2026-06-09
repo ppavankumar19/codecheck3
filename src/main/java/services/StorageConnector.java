@@ -175,6 +175,20 @@ public class StorageConnector {
                             problem.get("qid").asText() + ".zip"))) {
                     problem.put("URL", "/files/wiley/" + problem.get("qid").asText());
                     localizedGroup.add(problem);
+                } else if (url.startsWith("https://horstmann.com/interactivities/") && localRoot != null) {
+                    // Rewrite horstmann.com interactivity URLs to local server
+                    String xhtmlName = url.substring("https://horstmann.com/interactivities/".length());
+                    Path localFile = Path.of(localRoot, "Interactivities", xhtmlName);
+                    if (Files.isRegularFile(localFile)) {
+                        // Strip .xhtml extension for the route
+                        String routeName = xhtmlName.endsWith(".xhtml")
+                                ? xhtmlName.substring(0, xhtmlName.length() - ".xhtml".length())
+                                : xhtmlName;
+                        problem.put("URL", "/interactivities/" + routeName);
+                        localizedGroup.add(problem);
+                    } else {
+                        omittedProblems++;
+                    }
                 } else {
                     omittedProblems++;
                 }
