@@ -114,22 +114,25 @@ Each page has two sections:
 
 ---
 
-## Offline Setup
+## Offline Setup — 100% Offline
 
-713 problem ZIPs are pre-downloaded to `/opt/codecheck/repo/Problems/wiley/`.
-48 weekly assignment JSONs are stored in `/opt/codecheck/repo/CodeCheckAssignments/`.
-Offline mode keeps locally cached CodeCheck lessons in those assignments and omits
-third-party interactive lessons whose assets are not available locally. An assignment
-that contains only third-party lessons reports that it is unavailable offline instead
-of loading a broken remote iframe.
+The project is **fully offline**. No internet connection is required at runtime.
 
-No internet is required at runtime for the locally cached lessons, assignment work,
-or code checking.
+| Data | Location | Count |
+|---|---|---|
+| Problem ZIPs | `/opt/codecheck/repo/Problems/wiley/` | 713 |
+| Assignment JSONs | `/opt/codecheck/repo/CodeCheckAssignments/` | 48 |
+| Interactive exercises (XHTML + JS/CSS) | `/opt/codecheck/repo/Interactivities/` | 134 + assets |
+
+All 48 weekly assignments now include **all** lessons — both CodeCheck problems
+and Horstmann interactive exercises (walkthroughs, rearrange puzzles, example tables,
+algorithm simulations, etc.) are served locally. Zero lessons are omitted.
 
 To re-download (if needed):
 ```bash
-python3 download-wiley-problems.py   # problem ZIPs
-python3 download-assignments.py      # weekly assignment data
+python3 download-wiley-problems.py      # 713 problem ZIPs
+python3 download-assignments.py         # 48 weekly assignment JSONs
+python3 download-interactivities.py     # 134 interactive exercises + shared assets
 ```
 
 > **Note:** Console errors starting with `chrome-extension://...` or mentioning `/generate/tone`, `/writing/get_template_list`, `/site_integration` are from the **Edge Copilot browser extension** — they are completely unrelated to this server and can be ignored.

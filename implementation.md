@@ -216,9 +216,9 @@ Then open:
 
 ---
 
-## Offline Operation
+## Offline Operation — 100% Offline
 
-### What was blocking offline use (and the fixes applied)
+### All fixes applied to achieve full offline operation
 
 | # | File | Problem | Fix |
 |---|---|---|---|
@@ -227,36 +227,40 @@ Then open:
 | 3 | `Files.java`, `LTIProblem.java` | Tracer CSS hard-coded to `https://horstmann.com/codecheck/css/codecheck_tracer.css` | Created local copy at `/assets/codecheck_tracer.css`, updated both Java files |
 | 4 | `horstmann_codecheck.js` | Uses `window.location.origin` for all API calls | Already relative — no change needed |
 | 5 | `Main.java` | `comrun.remote` vs `comrun.local` resolution | Already falls back to local; no change needed |
+| 6 | 134 interactive exercises | Assignment problems referenced `https://horstmann.com/interactivities/*.xhtml` — loaded in iframes, unavailable offline | Downloaded all 134 XHTML files + shared JS/CSS assets to `/opt/codecheck/repo/Interactivities/`. Created `InteractivitiesController.java` to serve them at `/interactivities/{name}`. Updated `localizeAssignment()` in `StorageConnector.java` to rewrite external interactivity URLs to local paths |
+| 7 | Bug report forms | All 4 exercise listing pages had forms posting to `https://horstmann.com/codecheck/bugReport` | Replaced with offline-friendly handler |
+| 8 | `test.html` | Hardcoded `https://codecheck.me/checkNJS` | Changed to relative `/checkNJS` |
+| 9 | `uploadProblem.html`, `Upload.java` | External link to `https://horstmann.com/codecheck/authoring.html` | Replaced with offline notice |
 
-### What still requires offline setup (not automatically solvable)
+### Offline data
 
-The problem ZIP files must be present locally at:
-```
-/opt/codecheck/repo/Problems/wiley/<problem-name>.zip
-```
+| Data | Location | Count |
+|---|---|---|
+| Problem ZIPs | `/opt/codecheck/repo/Problems/wiley/` | 713 |
+| Assignment JSONs | `/opt/codecheck/repo/CodeCheckAssignments/` | 48 |
+| Interactive exercises | `/opt/codecheck/repo/Interactivities/` | 134 XHTML + shared JS/CSS |
 
-**Option A — Download visible content only (partial, display works, checking limited):**
+All 48 weekly assignments include **all** lessons with zero omissions.
+
+### Download scripts
+
 ```bash
-pip install requests
-python3 download-wiley-problems.py --repo-root .
-```
-This downloads the visible file structure from `https://codecheck.io/fileData/wiley/...` for each problem and reconstructs ZIPs. Students can see and edit problems. Full pass/fail scoring requires Option B.
-
-**Option B — Full ZIPs (complete offline checking):**
-Obtain the complete problem ZIPs from the textbook author/publisher and place them at:
-```
-/opt/codecheck/repo/Problems/wiley/
+python3 download-wiley-problems.py      # 713 problem ZIPs
+python3 download-assignments.py         # 48 weekly assignment JSONs
+python3 download-interactivities.py     # 134 interactive exercises + shared assets
 ```
 
-### Offline architecture (after fixes)
+### Offline architecture
 
 ```
 Student browser ──► localhost:8080 ──► LocalStorageConnection (/opt/codecheck/repo/)
                                    ──► comrun (/opt/codecheck/comrun)  [code execution]
                                    ──► Static assets served locally
                                    ──► Problem ZIPs served locally
+                                   ──► Interactivities served locally via InteractivitiesController
+                                   ──► Assignment work saved to local filesystem
 ```
-No external network calls are made once the server is running.
+**Zero** external network calls are made at runtime.
 
 ---
 
@@ -264,6 +268,6 @@ No external network calls are made once the server is running.
 
 | Issue | Cause | Impact |
 |---|---|---|
-| Database warning on startup | Docker not running, Quarkus cannot auto-start PostgreSQL | Assignment save/load features do not work |
+| Database warning on startup | Docker not running, Quarkus cannot auto-start PostgreSQL | Non-critical; local filesystem storage works fine |
 | `comrun` not fully integrated | Requires Docker or manual process setup | Code checking via `/run` may not work locally |
 | Static pages work fully | No database needed | All 4 exercise listing pages work fine |
