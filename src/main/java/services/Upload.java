@@ -209,7 +209,7 @@ Public URL (for your students):
 <form method="post" action="/editedFiles/%s/%s">
 <div>
     <hr>
-    <a href="https://horstmann.com/codecheck/authoring.html" target="_blank">View User Guide</a>
+    <a href="#" onclick="alert('User guide is not available in offline mode.'); return false;">View User Guide</a>
 </div>
     <div>		
 """;
